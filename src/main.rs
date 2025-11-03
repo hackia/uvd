@@ -6,6 +6,7 @@ use crate::uvd::{
 use anyhow::Error;
 use clap::{Arg, Command};
 
+pub mod network;
 pub mod output;
 pub mod remote;
 pub mod uvd;
@@ -14,7 +15,7 @@ fn cli() -> clap::ArgMatches {
     Command::new("uvd")
         .version("0.1.0")
         .author("Willy Micieli <dev@hackia.org>")
-        .about("An Universal Verified Disc management toolkit")
+        .about("An universal verified disc toolkit")
         .subcommand(
             Command::new("install")
                 .about("Install a universal verified disc")
@@ -162,11 +163,17 @@ async fn main() -> Result<(), Error> {
     if let Some(_) = matches.subcommand_matches("list") {
         return list().await;
     }
-    if let Some(_) = matches.subcommand_matches("login") {
-        return uvd::hub::login().await;
+    match matches.subcommand_matches("login") {
+        Some(_) => {
+            return uvd::hub::login().await;
+        }
+        None => {}
     }
-    if let Some(_) = matches.subcommand_matches("logout") {
-        return uvd::hub::logout().await;
+    match matches.subcommand_matches("logout") {
+        Some(_) => {
+            return uvd::hub::logout().await;
+        }
+        None => {}
     }
     if let Some(sub) = matches.subcommand_matches("verify") {
         let uvd = sub.get_one::<String>("uvd").unwrap();

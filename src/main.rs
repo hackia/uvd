@@ -1,4 +1,4 @@
-use crate::uvd::{install, reinstall, search, uninstall, update, upgrade};
+use crate::uvd::{build, export, info, install, list, publish, reinstall, search, uninstall, update, upgrade, verify};
 use anyhow::Error;
 use clap::{Arg, Command};
 
@@ -51,6 +51,22 @@ fn cli() -> clap::ArgMatches {
                         .help("The universal verified disc to search"),
                 ),
         )
+        .subcommand(Command::new("list").about("List all universal verified discs"))
+        .subcommand(Command::new("login").about("Login  to the universal verified disc hub"))
+        .subcommand(Command::new("logout").about("Logout from the universal verified disc hub"))
+        .subcommand(Command::new("verify").about("Verify a universal verified disc"))
+        .subcommand(
+            Command::new("info")
+                .about("Get info for a universal verified disc")
+                .arg(
+                    Arg::new("uvd")
+                        .required(true)
+                        .index(1)
+                        .help("The universal verified disc to get info"),
+                ),
+        )
+        .subcommand(Command::new("build").about("Build a universal verified disc from source code"))
+        .subcommand(Command::new("publish").about("Publish a universal verified disc"))
         .subcommand(
             Command::new("update")
                 .about("Update a universal verified disc")
@@ -61,9 +77,25 @@ fn cli() -> clap::ArgMatches {
                         .help("The universal verified disc to update"),
                 ),
         )
+        .subcommand(
+            Command::new("export")
+                .about("Export a universal verified disc")
+                .arg(
+                    Arg::new("uvd")
+                        .required(true)
+                        .index(1)
+                        .help("The universal verified disc to update"),
+                ).arg(
+                Arg::new("usb")
+                    .required(true)
+                    .index(2)
+                    .help("The universal verified disc to update"),
+            ),
+        )
         .subcommand(Command::new("upgrade").about("Upgrade all universal verified discs"))
         .get_matches()
 }
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let matches = cli();
@@ -89,6 +121,34 @@ async fn main() -> Result<(), Error> {
     }
     if let Some(_) = matches.subcommand_matches("upgrade") {
         return upgrade().await;
+    }
+    if let Some(_) = matches.subcommand_matches("list") {
+        return list().await;
+    }
+    if let Some(_) = matches.subcommand_matches("login") {
+        return uvd::hub::login().await;
+    }
+    if let Some(_) = matches.subcommand_matches("logout") {
+        return uvd::hub::logout().await;
+    }
+    if let Some(sub) = matches.subcommand_matches("verify") {
+        let uvd = sub.get_one::<String>("uvd").unwrap();
+        return verify(uvd).await;
+    }
+    if let Some(sub) = matches.subcommand_matches("info") {
+        let uvd = sub.get_one::<String>("uvd").unwrap();
+        return info(uvd).await;
+    }
+    if let Some(_) = matches.subcommand_matches("publish") {
+        return publish().await;
+    }
+    if let Some(_) = matches.subcommand_matches("build") {
+        return build().await;
+    }
+    if let Some(sub) = matches.subcommand_matches("export") {
+        let uvd = sub.get_one::<String>("uvd").unwrap();
+        let usb = sub.get_one::<String>("usb").unwrap();
+        return export(uvd, usb).await;
     }
     Ok(())
 }

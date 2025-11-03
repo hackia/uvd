@@ -1,4 +1,4 @@
-use crate::uvd::install;
+use crate::uvd::{install, reinstall, search, uninstall};
 use anyhow::Error;
 use clap::{Arg, Command};
 
@@ -21,6 +21,36 @@ fn cli() -> clap::ArgMatches {
                         .help("The universal verified disc to install"),
                 ),
         )
+        .subcommand(
+            Command::new("reinstall")
+                .about("Reinstall a universal verified disc")
+                .arg(
+                    Arg::new("uvd")
+                        .required(true)
+                        .index(1)
+                        .help("The universal verified disc to reinstall"),
+                ),
+        )
+        .subcommand(
+            Command::new("uninstall")
+                .about("Uninstall a universal verified disc")
+                .arg(
+                    Arg::new("uvd")
+                        .required(true)
+                        .index(1)
+                        .help("The universal verified disc to uninstall"),
+                ),
+        )
+        .subcommand(
+            Command::new("search")
+                .about("Search for a universal verified disc")
+                .arg(
+                    Arg::new("uvd")
+                        .required(true)
+                        .index(1)
+                        .help("The universal verified disc to search"),
+                ),
+        )
         .get_matches()
 }
 #[tokio::main]
@@ -29,6 +59,18 @@ async fn main() -> Result<(), Error> {
     if let Some(sub) = matches.subcommand_matches("install") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         return install(uvd).await;
+    }
+    if let Some(sub) = matches.subcommand_matches("reinstall") {
+        let uvd = sub.get_one::<String>("uvd").unwrap();
+        return reinstall(uvd).await;
+    }
+    if let Some(sub) = matches.subcommand_matches("uninstall") {
+        let uvd = sub.get_one::<String>("uvd").unwrap();
+        return uninstall(uvd).await;
+    }
+    if let Some(sub) = matches.subcommand_matches("search") {
+        let uvd = sub.get_one::<String>("uvd").unwrap();
+        return search(uvd).await;
     }
     Ok(())
 }

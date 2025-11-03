@@ -28,6 +28,18 @@ pub async fn update(uvd: &str) -> Result<(), Error> {
     println!(">>> Updating {uvd}");
     Ok(())
 }
+pub async fn adding_dependency(deps: &str) -> Result<(), Error> {
+    println!(">>> Adding dependencies {deps}");
+    Ok(())
+}
+pub async fn remove_dependency(deps: &str) -> Result<(), Error> {
+    println!(">>> Removing dependencies {deps}");
+    Ok(())
+}
+pub async fn archive() -> Result<(), Error> {
+    println!(">>> Archiving");
+    Ok(())
+}
 pub async fn info(uvd: &str) -> Result<(), Error> {
     println!(">>> Getting info for {uvd}");
     Ok(())

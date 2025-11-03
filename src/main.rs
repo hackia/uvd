@@ -1,9 +1,13 @@
-use crate::uvd::{build, export, info, install, list, publish, reinstall, search, uninstall, update, upgrade, verify};
+use crate::remote::{add_remote, remove_remote};
+use crate::uvd::{
+    adding_dependency, archive, build, export, info, install, list, publish, reinstall,
+    remove_dependency, search, uninstall, update, upgrade, verify,
+};
 use anyhow::Error;
 use clap::{Arg, Command};
 
 pub mod output;
-
+pub mod remote;
 pub mod uvd;
 
 fn cli() -> clap::ArgMatches {
@@ -52,6 +56,16 @@ fn cli() -> clap::ArgMatches {
                 ),
         )
         .subcommand(Command::new("list").about("List all universal verified discs"))
+        .subcommand(
+            Command::new("add")
+                .about("add dependencies to the universal verified disc")
+                .arg(Arg::new("deps").required(true).index(1)),
+        )
+        .subcommand(
+            Command::new("rm")
+                .about("remove a dependencies to the universal verified disc")
+                .arg(Arg::new("deps").required(true).index(1)),
+        )
         .subcommand(Command::new("login").about("Login  to the universal verified disc hub"))
         .subcommand(Command::new("logout").about("Logout from the universal verified disc hub"))
         .subcommand(Command::new("verify").about("Verify a universal verified disc"))
@@ -68,12 +82,33 @@ fn cli() -> clap::ArgMatches {
         .subcommand(Command::new("build").about("Build a universal verified disc from source code"))
         .subcommand(Command::new("publish").about("Publish a universal verified disc"))
         .subcommand(
+            Command::new("remote")
+                .about("Manage a universal verified disc remote url")
+                .subcommand(
+                    Command::new("add")
+                        .about("Add a remote url")
+                        .arg(Arg::new("name").required(true))
+                        .arg(Arg::new("url").required(true)),
+                )
+                .subcommand(
+                    Command::new("remove")
+                        .about("Remove a remote url")
+                        .arg(Arg::new("name").required(true)),
+                ),
+        )
+        .subcommand(
             Command::new("update")
                 .about("Update a universal verified disc")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
+                        .help("The universal verified disc to update"),
+                )
+                .arg(
+                    Arg::new("usb")
+                        .required(true)
+                        .index(2)
                         .help("The universal verified disc to update"),
                 ),
         )
@@ -85,14 +120,16 @@ fn cli() -> clap::ArgMatches {
                         .required(true)
                         .index(1)
                         .help("The universal verified disc to update"),
-                ).arg(
-                Arg::new("usb")
-                    .required(true)
-                    .index(2)
-                    .help("The universal verified disc to update"),
-            ),
+                )
+                .arg(
+                    Arg::new("usb")
+                        .required(true)
+                        .index(2)
+                        .help("The universal verified disc to update"),
+                ),
         )
         .subcommand(Command::new("upgrade").about("Upgrade all universal verified discs"))
+        .subcommand(Command::new("archive").about("Archive the source code"))
         .get_matches()
 }
 
@@ -149,6 +186,28 @@ async fn main() -> Result<(), Error> {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         let usb = sub.get_one::<String>("usb").unwrap();
         return export(uvd, usb).await;
+    }
+    if let Some(sub) = matches.subcommand_matches("remote") {
+        if let Some(sub) = sub.subcommand_matches("add") {
+            let name = sub.get_one::<String>("name").unwrap();
+            let url = sub.get_one::<String>("url").unwrap();
+            return add_remote(name, url).await;
+        }
+        if let Some(sub) = sub.subcommand_matches("remove") {
+            let name = sub.get_one::<String>("name").unwrap();
+            return remove_remote(name).await;
+        }
+    }
+    if let Some(sub) = matches.subcommand_matches("add") {
+        let deps = sub.get_one::<String>("deps").unwrap();
+        return adding_dependency(deps).await;
+    }
+    if let Some(sub) = matches.subcommand_matches("rm") {
+        let deps = sub.get_one::<String>("deps").unwrap();
+        return remove_dependency(deps).await;
+    }
+    if let Some(_) = matches.subcommand_matches("archive") {
+        return archive().await;
     }
     Ok(())
 }

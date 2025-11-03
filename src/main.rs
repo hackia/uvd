@@ -1,4 +1,4 @@
-use crate::uvd::{install, reinstall, search, uninstall};
+use crate::uvd::{install, reinstall, search, uninstall, update, upgrade};
 use anyhow::Error;
 use clap::{Arg, Command};
 
@@ -51,6 +51,17 @@ fn cli() -> clap::ArgMatches {
                         .help("The universal verified disc to search"),
                 ),
         )
+        .subcommand(
+            Command::new("update")
+                .about("Update a universal verified disc")
+                .arg(
+                    Arg::new("uvd")
+                        .required(true)
+                        .index(1)
+                        .help("The universal verified disc to update"),
+                ),
+        )
+        .subcommand(Command::new("upgrade").about("Upgrade all universal verified discs"))
         .get_matches()
 }
 #[tokio::main]
@@ -71,6 +82,13 @@ async fn main() -> Result<(), Error> {
     if let Some(sub) = matches.subcommand_matches("search") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         return search(uvd).await;
+    }
+    if let Some(sub) = matches.subcommand_matches("update") {
+        let uvd = sub.get_one::<String>("uvd").unwrap();
+        return update(uvd).await;
+    }
+    if let Some(_) = matches.subcommand_matches("upgrade") {
+        return upgrade().await;
     }
     Ok(())
 }

@@ -18,4 +18,12 @@ pub async fn search(uvd: &str) -> Result<(), Error> {
     println!(">>> Searching {uvd}");
     Ok(())
 }
+pub async fn update(uvd: &str) -> Result<(), Error> {
+    println!(">>> Updating {uvd}");
+    Ok(())
+}
 
+pub async fn upgrade() -> Result<(), Error> {
+    println!(">>> Upgrading");
+    Ok(())
+}

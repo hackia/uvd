@@ -1,14 +1,18 @@
+#![feature(const_cmp)]
 use crate::remote::{add_remote, remove_remote};
 use crate::uvd::{
-    adding_dependency, archive, build, export, info, install, list, publish, reinstall,
+    adding_dependency, create_usb, create_uvd, info, install, list, new, publish, reinstall,
     remove_dependency, search, uninstall, update, upgrade, verify,
 };
 use anyhow::Error;
 use clap::{Arg, Command};
 
+pub mod hooks;
+pub mod license;
 pub mod network;
 pub mod output;
 pub mod remote;
+pub mod utils;
 pub mod uvd;
 
 fn cli() -> clap::ArgMatches {
@@ -80,7 +84,9 @@ fn cli() -> clap::ArgMatches {
                         .help("The universal verified disc to get info"),
                 ),
         )
-        .subcommand(Command::new("build").about("Build a universal verified disc from source code"))
+        .subcommand(
+            Command::new("create-uvd").about("Build a universal verified disc from source code"),
+        )
         .subcommand(Command::new("publish").about("Publish a universal verified disc"))
         .subcommand(
             Command::new("remote")
@@ -105,31 +111,26 @@ fn cli() -> clap::ArgMatches {
                         .required(true)
                         .index(1)
                         .help("The universal verified disc to update"),
-                )
-                .arg(
-                    Arg::new("usb")
-                        .required(true)
-                        .index(2)
-                        .help("The universal verified disc to update"),
                 ),
         )
         .subcommand(
-            Command::new("export")
-                .about("Export a universal verified disc")
+            Command::new("create-usb")
+                .about("Create a universal verified disc usb drive")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to update"),
+                        .help("The universal verified disc to create usb drive"),
                 )
                 .arg(
                     Arg::new("usb")
                         .required(true)
                         .index(2)
-                        .help("The universal verified disc to update"),
+                        .help("The usb drive to copy to"),
                 ),
         )
-        .subcommand(Command::new("upgrade").about("Upgrade all universal verified discs"))
+        .subcommand(Command::new("upgrade").about("Upgrade all universal verified disc"))
+        .subcommand(Command::new("new").about("Start a new universal verified disc project"))
         .subcommand(Command::new("archive").about("Archive the source code"))
         .get_matches()
 }
@@ -139,15 +140,15 @@ async fn main() -> Result<(), Error> {
     let matches = cli();
     if let Some(sub) = matches.subcommand_matches("install") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
-        return install(uvd).await;
+        return install(uvd);
     }
     if let Some(sub) = matches.subcommand_matches("reinstall") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
-        return reinstall(uvd).await;
+        return reinstall(uvd);
     }
     if let Some(sub) = matches.subcommand_matches("uninstall") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
-        return uninstall(uvd).await;
+        return uninstall(uvd);
     }
     if let Some(sub) = matches.subcommand_matches("search") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
@@ -186,13 +187,10 @@ async fn main() -> Result<(), Error> {
     if let Some(_) = matches.subcommand_matches("publish") {
         return publish().await;
     }
-    if let Some(_) = matches.subcommand_matches("build") {
-        return build().await;
-    }
-    if let Some(sub) = matches.subcommand_matches("export") {
+    if let Some(sub) = matches.subcommand_matches("create-usb") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         let usb = sub.get_one::<String>("usb").unwrap();
-        return export(uvd, usb).await;
+        return create_usb(uvd, usb).await;
     }
     if let Some(sub) = matches.subcommand_matches("remote") {
         if let Some(sub) = sub.subcommand_matches("add") {
@@ -213,8 +211,11 @@ async fn main() -> Result<(), Error> {
         let deps = sub.get_one::<String>("deps").unwrap();
         return remove_dependency(deps).await;
     }
-    if let Some(_) = matches.subcommand_matches("archive") {
-        return archive().await;
+    if let Some(_) = matches.subcommand_matches("create-uvd") {
+        return create_uvd();
+    }
+    if let Some(_) = matches.subcommand_matches("new") {
+        return new().await;
     }
     Ok(())
 }

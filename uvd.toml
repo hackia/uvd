@@ -1,0 +1,8 @@
+[package]
+name = "uvd"
+version = "0.0.0"
+description = "Un logiciel qui révolutionne la gestion de projet."
+license = "APGL-3.0"
+author = "hackia <dev@hackia.org>"
+
+[dependencies]

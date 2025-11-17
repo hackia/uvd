@@ -1,6 +1,6 @@
 use std::env::consts::OS;
-use std::fs::{File, create_dir_all, read_to_string};
-use std::io::Write;
+use std::fs::{File, create_dir_all};
+use std::io::{BufReader, Write};
 use std::{env, fs};
 pub mod data;
 pub mod hub;
@@ -17,7 +17,7 @@ pub struct Config {
     pub name: String,
     pub version: String,
     pub description: String,
-    pub author: String,
+    pub authors: Vec<String>,
     pub license: String,
     pub readme: String,
     pub src: Vec<String>,
@@ -126,7 +126,9 @@ pub fn remove_dependency(deps: &str) -> Result<(), Error> {
 /// # Errors
 /// - if the config cannot be read
 pub fn uvd() -> Result<String, Error> {
-    let config: Config = toml::from_str(read_to_string("uvd.toml")?.as_str())?;
+    let file = File::open("uvd.yml")?;
+    let reader = BufReader::new(file);
+    let config: Config = serde_yaml::from_reader(reader)?;
     Ok(format!(
         "{}-{}_{}.uvd",
         Utc::now().timestamp(),
@@ -138,7 +140,9 @@ pub fn uvd() -> Result<String, Error> {
 /// - if the config cannot be read
 /// - if the archive cannot be created
 pub fn create_uvd() -> Result<(), Error> {
-    let config: Config = toml::from_str(read_to_string("uvd.toml")?.as_str())?;
+    let file = File::open("uvd.yml")?;
+    let reader = BufReader::new(file);
+    let config: Config = serde_yaml::from_reader(reader)?;
     println!(">>> Creating uvd from source code");
     let archive_name = uvd()?;
     let archive_file = File::create(archive_name.clone())?;
@@ -224,7 +228,7 @@ pub fn new() -> Result<(), Error> {
         license.clear();
         license = Select::new("Select a project license", get_licenses()).prompt()?;
     }
-    let mut config = File::create(format!("{project}/uvd.toml"))?;
+    let mut config = File::create(format!("{project}/uvd.yaml"))?;
     let mut readme = File::create(format!("{project}/README.md"))?;
     let mut license_file = File::create(format!("{project}/LICENSE"))?;
     write!(config, "name = \"{project}\"\nlicense = \"{license}\"")?;

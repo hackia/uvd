@@ -1,7 +1,0 @@
-name = "uvd"
-version = "0.0.0"
-description = "build a dvd"
-author = "hackia"
-license = "LICENSE"
-readme = "README.md"
-src = ["src", "Cargo.toml"]

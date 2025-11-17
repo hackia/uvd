@@ -2,9 +2,10 @@ name: uvd
 description: the dvd replacement
 version: 0.1.0
 license: AGPL-3.0
+readme: README.md
 authors:
-  - Willy Micieli <dev@hackia.org>
-sources:
+  - Willy Micieli
+src:
   - src
   - Cargo.toml
   - Cargo.lock

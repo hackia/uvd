@@ -1,4 +1,3 @@
-#![feature(const_cmp)]
 use crate::remote::{add_remote, remove_remote};
 use crate::uvd::{
     adding_dependency, create_usb, create_uvd, info, install, list, new, publish, reinstall,
@@ -7,14 +6,11 @@ use crate::uvd::{
 use anyhow::Error;
 use clap::{Arg, Command};
 
-pub mod hooks;
 pub mod license;
 pub mod network;
 pub mod output;
 pub mod remote;
-pub mod utils;
 pub mod uvd;
-
 fn cli() -> clap::ArgMatches {
     Command::new("uvd")
         .version("0.1.0")
@@ -73,7 +69,16 @@ fn cli() -> clap::ArgMatches {
         )
         .subcommand(Command::new("login").about("Login  to the universal verified disc hub"))
         .subcommand(Command::new("logout").about("Logout from the universal verified disc hub"))
-        .subcommand(Command::new("verify").about("Verify a universal verified disc"))
+        .subcommand(
+            Command::new("verify")
+                .arg(
+                    Arg::new("uvd")
+                        .required(true)
+                        .index(1)
+                        .help("The universal verified disc to verify"),
+                )
+                .about("Verify a universal verified disc"),
+        )
         .subcommand(
             Command::new("info")
                 .about("Get info for a universal verified disc")
@@ -135,8 +140,7 @@ fn cli() -> clap::ArgMatches {
         .get_matches()
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     let matches = cli();
     if let Some(sub) = matches.subcommand_matches("install") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
@@ -152,70 +156,70 @@ async fn main() -> Result<(), Error> {
     }
     if let Some(sub) = matches.subcommand_matches("search") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
-        return search(uvd).await;
+        return search(uvd);
     }
     if let Some(sub) = matches.subcommand_matches("update") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
-        return update(uvd).await;
+        return update(uvd);
     }
     if let Some(_) = matches.subcommand_matches("upgrade") {
-        return upgrade().await;
+        return upgrade();
     }
     if let Some(_) = matches.subcommand_matches("list") {
-        return list().await;
+        return list();
     }
     match matches.subcommand_matches("login") {
         Some(_) => {
-            return uvd::hub::login().await;
+            return uvd::hub::login();
         }
         None => {}
     }
     match matches.subcommand_matches("logout") {
         Some(_) => {
-            return uvd::hub::logout().await;
+            return uvd::hub::logout();
         }
         None => {}
     }
     if let Some(sub) = matches.subcommand_matches("verify") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
-        return verify(uvd).await;
+        return verify(uvd);
     }
     if let Some(sub) = matches.subcommand_matches("info") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
-        return info(uvd).await;
+        return info(uvd);
     }
     if let Some(_) = matches.subcommand_matches("publish") {
-        return publish().await;
+        return publish();
     }
     if let Some(sub) = matches.subcommand_matches("create-usb") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         let usb = sub.get_one::<String>("usb").unwrap();
-        return create_usb(uvd, usb).await;
+        return create_usb(uvd, usb);
     }
     if let Some(sub) = matches.subcommand_matches("remote") {
         if let Some(sub) = sub.subcommand_matches("add") {
             let name = sub.get_one::<String>("name").unwrap();
             let url = sub.get_one::<String>("url").unwrap();
-            return add_remote(name, url).await;
+            return add_remote(name, url);
         }
         if let Some(sub) = sub.subcommand_matches("remove") {
             let name = sub.get_one::<String>("name").unwrap();
-            return remove_remote(name).await;
+            return remove_remote(name);
         }
     }
     if let Some(sub) = matches.subcommand_matches("add") {
         let deps = sub.get_one::<String>("deps").unwrap();
-        return adding_dependency(deps).await;
+        return adding_dependency(deps);
     }
     if let Some(sub) = matches.subcommand_matches("rm") {
         let deps = sub.get_one::<String>("deps").unwrap();
-        return remove_dependency(deps).await;
+        return remove_dependency(deps);
     }
     if let Some(_) = matches.subcommand_matches("create-uvd") {
         return create_uvd();
     }
     if let Some(_) = matches.subcommand_matches("new") {
-        return new().await;
+        return new();
     }
     Ok(())
 }

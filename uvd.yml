@@ -1,0 +1,18 @@
+name: uvd
+description: the dvd replacement
+version: 0.1.0
+license: AGPL-3.0
+authors:
+  - Willy Micieli <dev@hackia.org>
+sources:
+  - src
+  - Cargo.toml
+  - Cargo.lock
+  - README.md
+  - LICENSE
+env:
+  CARGO_TERM_COLOR: always
+build:
+  - cargo build --release
+install:
+  - target/release/uvd

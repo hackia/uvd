@@ -1,17 +1,16 @@
 use std::env::consts::OS;
-use std::fs::File;
+use std::fs::{File, create_dir_all, read_to_string};
 use std::io::Write;
 use std::{env, fs};
 pub mod data;
 pub mod hub;
 
 use crate::license::get_licenses;
-use crate::utils::run_hooks;
 use anyhow::Error;
+use chrono::Utc;
 use inquire::{Select, Text};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use tokio::fs::create_dir_all;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
@@ -20,13 +19,14 @@ pub struct Config {
     pub description: String,
     pub author: String,
     pub license: String,
-    pub dependencies: Vec<String>,
+    pub readme: String,
+    pub src: Vec<String>,
 }
 
 pub fn install(uvd_path: &str) -> Result<(), Error> {
-    let fichier_uvd = File::open(uvd_path)?;
-    let decompresseur = zstd::stream::read::Decoder::new(fichier_uvd)?;
-    let mut archive_tar = tar::Archive::new(decompresseur);
+    let uvd_file = File::open(uvd_path)?;
+    let dec = zstd::stream::read::Decoder::new(uvd_file)?;
+    let mut archive_tar = tar::Archive::new(dec);
 
     let install_dir = match OS {
         "linux" | "freebsd" | "macos" => {
@@ -39,10 +39,10 @@ pub fn install(uvd_path: &str) -> Result<(), Error> {
         }
         _ => {
             println!(">>> OS not supported: {OS}");
-            return Err(Error::msg(format!("OS non supporté: {OS}")));
+            return Err(Error::msg(format!("OS not supported : {OS}")));
         }
     };
-    fs::create_dir_all(&install_dir)?;
+    create_dir_all(&install_dir)?;
     archive_tar.unpack(&install_dir)?;
     println!(">>> Installed successfully in: {}", install_dir.display());
     Ok(())
@@ -66,7 +66,7 @@ pub fn uninstall(uvd: &str) -> Result<(), Error> {
             PathBuf::from(appdata).join("uvd/bin")
         }
         _ => {
-            return Err(Error::msg(format!("OS non supporté: {OS}")));
+            return Err(Error::msg(format!("OS non supported: {OS}")));
         }
     };
 
@@ -85,73 +85,80 @@ pub fn uninstall(uvd: &str) -> Result<(), Error> {
     Ok(())
 }
 
-pub async fn search(uvd: &str) -> Result<(), Error> {
+pub fn search(uvd: &str) -> Result<(), Error> {
     println!(">>> Searching {uvd}");
     Ok(())
 }
-pub async fn update(uvd: &str) -> Result<(), Error> {
+pub fn update(uvd: &str) -> Result<(), Error> {
     println!(">>> Updating {uvd}");
     Ok(())
 }
-pub async fn adding_dependency(deps: &str) -> Result<(), Error> {
+pub fn adding_dependency(deps: &str) -> Result<(), Error> {
     println!(">>> Adding dependency {deps}");
     Ok(())
 }
-pub async fn remove_dependency(deps: &str) -> Result<(), Error> {
+pub fn remove_dependency(deps: &str) -> Result<(), Error> {
     println!(">>> Removing dependency {deps}");
     Ok(())
 }
 
 pub fn uvd() -> Result<String, Error> {
-    let config: Config = toml::from_str("uvd.toml")?;
-    Ok(format!("{}_{}.uvd", config.name, config.version))
+    let config: Config = toml::from_str(read_to_string("uvd.toml")?.as_str())?;
+    Ok(format!(
+        "{}-{}_{}.uvd",
+        Utc::now().timestamp(),
+        config.name,
+        config.version
+    ))
 }
 pub fn create_uvd() -> Result<(), Error> {
-    if run_hooks().is_err() {
-        return Err(Error::msg("Hooks failed"));
-    };
-    println!(">>> Creating");
+    let config: Config = toml::from_str(read_to_string("uvd.toml")?.as_str())?;
+    println!(">>> Creating uvd from source code");
     let archive_name = uvd()?;
     let archive_file = File::create(archive_name.clone())?;
-    let compresseur = zstd::stream::write::Encoder::new(archive_file, 3)?;
-    let mut archive_tar = tar::Builder::new(compresseur);
-    archive_tar.append_path("Cargo.toml")?;
-    archive_tar.append_path("uvd.toml")?;
-    // ... ajoute d'autres fichiers (README, LICENSE...)
+    let compressor = zstd::stream::write::Encoder::new(archive_file, 3)?;
+    let mut archive = tar::Builder::new(compressor);
 
-    // 5. Termine l'écriture
-    // On doit appeler finish() sur le tar, puis sur le compresseur
-    let compresseur_termine = archive_tar.into_inner()?;
-    compresseur_termine.finish()?;
-
-    println!("Archive {} créée !", archive_name.clone());
+    for source in &config.src {
+        if Path::new(source).is_dir() {
+            archive.append_dir_all(source, source)?;
+        } else {
+            archive.append_path(source)?;
+        }
+    }
+    let ending = archive.into_inner()?;
+    ending.finish()?;
+    println!(
+        "Archive {} has been created successfully",
+        archive_name.clone()
+    );
     Ok(())
 }
-pub async fn info(uvd: &str) -> Result<(), Error> {
+pub fn info(uvd: &str) -> Result<(), Error> {
     println!(">>> Getting info for {uvd}");
     Ok(())
 }
-pub async fn create_usb(uvd: &str, usb: &str) -> Result<(), Error> {
+pub fn create_usb(uvd: &str, usb: &str) -> Result<(), Error> {
     println!(">>> Exporting {uvd} to {usb}");
     Ok(())
 }
-pub async fn verify(uvd: &str) -> Result<(), Error> {
+pub fn verify(uvd: &str) -> Result<(), Error> {
     println!(">>> Verifying {uvd}");
     Ok(())
 }
-pub async fn publish() -> Result<(), Error> {
+pub fn publish() -> Result<(), Error> {
     println!(">>> Publishing");
     Ok(())
 }
-pub async fn upgrade() -> Result<(), Error> {
+pub fn upgrade() -> Result<(), Error> {
     println!(">>> Upgrading");
     Ok(())
 }
-pub async fn list() -> Result<(), Error> {
+pub fn list() -> Result<(), Error> {
     println!(">>> Listing");
     Ok(())
 }
-pub async fn new() -> Result<(), Error> {
+pub fn new() -> Result<(), Error> {
     let mut project = String::new();
     let mut license = String::new();
 
@@ -164,9 +171,7 @@ pub async fn new() -> Result<(), Error> {
         return Ok(());
     }
 
-    create_dir_all(&project)
-        .await
-        .expect("Failed to create project directory");
+    create_dir_all(&project).expect("Failed to create project directory");
     while license.is_empty() {
         license.clear();
         license = Select::new("Select a project license", get_licenses()).prompt()?;

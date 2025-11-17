@@ -23,6 +23,9 @@ pub struct Config {
     pub src: Vec<String>,
 }
 
+/// install an uvd package
+/// # Errors
+/// - If the package cannot be installed
 pub fn install(uvd_path: &str) -> Result<(), Error> {
     let uvd_file = File::open(uvd_path)?;
     let dec = zstd::stream::read::Decoder::new(uvd_file)?;
@@ -48,6 +51,9 @@ pub fn install(uvd_path: &str) -> Result<(), Error> {
     Ok(())
 }
 
+/// reinstall an uvd package
+/// # Errors
+/// - If the package cannot be reinstalled
 pub fn reinstall(uvd: &str) -> Result<(), Error> {
     println!(">>> Reinstalling {uvd}");
     uninstall(uvd)?;
@@ -55,6 +61,9 @@ pub fn reinstall(uvd: &str) -> Result<(), Error> {
     println!(">>> Reinstalled {uvd}");
     Ok(())
 }
+/// uninstall an uvd package
+/// # Errors
+/// - If the package cannot be uninstalled
 pub fn uninstall(uvd: &str) -> Result<(), Error> {
     let install_dir = match OS {
         "linux" | "freebsd" | "macos" => {
@@ -84,24 +93,38 @@ pub fn uninstall(uvd: &str) -> Result<(), Error> {
     }
     Ok(())
 }
-
+/// search for an uvd package
+/// # Errors
+/// - If the package cannot be searched
 pub fn search(uvd: &str) -> Result<(), Error> {
     println!(">>> Searching {uvd}");
     Ok(())
 }
+/// update an uvd package
+/// # Errors
+/// - If the package cannot be updated
 pub fn update(uvd: &str) -> Result<(), Error> {
     println!(">>> Updating {uvd}");
     Ok(())
 }
+/// add dependencies to an uvd package
+/// # Errors
+/// - If the dependencies cannot be added
 pub fn adding_dependency(deps: &str) -> Result<(), Error> {
     println!(">>> Adding dependency {deps}");
     Ok(())
 }
+/// remove dependencies to an uvd package
+/// # Errors
+/// - If the dependencies cannot be removed
+/// - If the dependencies cannot be removed
 pub fn remove_dependency(deps: &str) -> Result<(), Error> {
     println!(">>> Removing dependency {deps}");
     Ok(())
 }
 
+/// # Errors
+/// - if the config cannot be read
 pub fn uvd() -> Result<String, Error> {
     let config: Config = toml::from_str(read_to_string("uvd.toml")?.as_str())?;
     Ok(format!(
@@ -111,6 +134,9 @@ pub fn uvd() -> Result<String, Error> {
         config.version
     ))
 }
+/// # Errors
+/// - if the config cannot be read
+/// - if the archive cannot be created
 pub fn create_uvd() -> Result<(), Error> {
     let config: Config = toml::from_str(read_to_string("uvd.toml")?.as_str())?;
     println!(">>> Creating uvd from source code");
@@ -128,49 +154,71 @@ pub fn create_uvd() -> Result<(), Error> {
     }
     let ending = archive.into_inner()?;
     ending.finish()?;
-    println!(
-        "Archive {} has been created successfully",
-        archive_name.clone()
-    );
+    println!("Archive {archive_name} has been created successfully",);
     Ok(())
 }
+/// # get info for an uvd package
+/// # Errors
+/// - if the info cannot be read
 pub fn info(uvd: &str) -> Result<(), Error> {
     println!(">>> Getting info for {uvd}");
     Ok(())
 }
+/// create an usb drive from an uvd package
+/// # Errors
+/// - if the usb cannot be created
 pub fn create_usb(uvd: &str, usb: &str) -> Result<(), Error> {
     println!(">>> Exporting {uvd} to {usb}");
     Ok(())
 }
+/// # verify an uvd package
+/// # Errors
+/// - if the package cannot be verified
 pub fn verify(uvd: &str) -> Result<(), Error> {
     println!(">>> Verifying {uvd}");
     Ok(())
 }
+/// # Publish an uvd package
+/// # Errors
+/// - if the package cannot be published
 pub fn publish() -> Result<(), Error> {
     println!(">>> Publishing");
     Ok(())
 }
+/// # Upgrade all universal verified discs
+/// # Errors
+/// - if the package cannot be upgraded
 pub fn upgrade() -> Result<(), Error> {
     println!(">>> Upgrading");
     Ok(())
 }
+///
+/// # Errors
+/// - if not possible
 pub fn list() -> Result<(), Error> {
     println!(">>> Listing");
     Ok(())
 }
+///
+/// # create a new project
+/// # Panics
+/// - If the project directory cannot be created
+/// # Errors
+/// - If the project already exists
+/// - If the project directory cannot be created
+///
 pub fn new() -> Result<(), Error> {
     let mut project = String::new();
     let mut license = String::new();
 
     while project.is_empty() {
         project.clear();
-        project = Text::new("Project name").prompt()?;
+        project = Text::new("Project name:").prompt()?;
     }
     if Path::new(&project).exists() {
         println!(">>> Project already exists");
         return Ok(());
     }
-
     create_dir_all(&project).expect("Failed to create project directory");
     while license.is_empty() {
         license.clear();
@@ -179,11 +227,11 @@ pub fn new() -> Result<(), Error> {
     let mut config = File::create(format!("{project}/uvd.toml"))?;
     let mut readme = File::create(format!("{project}/README.md"))?;
     let mut license_file = File::create(format!("{project}/LICENSE"))?;
-    write!(config, "name = \"{}\"\nlicense = \"{}\"", project, license)?;
-    write!(readme, "# {project}\n")?;
-    write!(
+    write!(config, "name = \"{project}\"\nlicense = \"{license}\"")?;
+    writeln!(readme, "# {project}")?;
+    writeln!(
         license_file,
-        "This project is licensed under the {license} license.\n"
+        "This project is licensed under the {license} license."
     )?;
     println!(">>> {project} initialized");
     Ok(())

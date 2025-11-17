@@ -7,10 +7,10 @@ use anyhow::Error;
 use clap::{Arg, Command};
 
 pub mod license;
-pub mod network;
 pub mod output;
 pub mod remote;
 pub mod uvd;
+#[allow(clippy::too_many_lines)]
 fn cli() -> clap::ArgMatches {
     Command::new("uvd")
         .version("0.1.0")
@@ -162,23 +162,17 @@ fn main() -> Result<(), Error> {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         return update(uvd);
     }
-    if let Some(_) = matches.subcommand_matches("upgrade") {
+    if matches.subcommand_matches("upgrade").is_some() {
         return upgrade();
     }
-    if let Some(_) = matches.subcommand_matches("list") {
+    if matches.subcommand_matches("list").is_some() {
         return list();
     }
-    match matches.subcommand_matches("login") {
-        Some(_) => {
-            return uvd::hub::login();
-        }
-        None => {}
+    if matches.subcommand_matches("login").is_some() {
+        return uvd::hub::login();
     }
-    match matches.subcommand_matches("logout") {
-        Some(_) => {
-            return uvd::hub::logout();
-        }
-        None => {}
+    if matches.subcommand_matches("logout").is_some() {
+        return uvd::hub::logout();
     }
     if let Some(sub) = matches.subcommand_matches("verify") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
@@ -188,7 +182,7 @@ fn main() -> Result<(), Error> {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         return info(uvd);
     }
-    if let Some(_) = matches.subcommand_matches("publish") {
+    if matches.subcommand_matches("publish").is_some() {
         return publish();
     }
     if let Some(sub) = matches.subcommand_matches("create-usb") {
@@ -215,10 +209,10 @@ fn main() -> Result<(), Error> {
         let deps = sub.get_one::<String>("deps").unwrap();
         return remove_dependency(deps);
     }
-    if let Some(_) = matches.subcommand_matches("create-uvd") {
+    if matches.subcommand_matches("create-uvd").is_some() {
         return create_uvd();
     }
-    if let Some(_) = matches.subcommand_matches("new") {
+    if matches.subcommand_matches("new").is_some() {
         return new();
     }
     Ok(())

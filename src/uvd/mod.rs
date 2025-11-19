@@ -4,6 +4,7 @@ use std::io::{BufReader, Write};
 use std::{env, fs};
 pub mod data;
 pub mod hub;
+mod protocol;
 
 use crate::license::get_licenses;
 use anyhow::Error;
@@ -19,7 +20,6 @@ pub struct Config {
     pub description: String,
     pub authors: Vec<String>,
     pub license: String,
-    pub readme: String,
     pub src: Vec<String>,
 }
 

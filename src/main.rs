@@ -140,7 +140,8 @@ fn cli() -> clap::ArgMatches {
         .get_matches()
 }
 
-fn main() -> Result<(), Error> {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
     let matches = cli();
     if let Some(sub) = matches.subcommand_matches("install") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
@@ -168,12 +169,6 @@ fn main() -> Result<(), Error> {
     if matches.subcommand_matches("list").is_some() {
         return list();
     }
-    if matches.subcommand_matches("login").is_some() {
-        return uvd::hub::login();
-    }
-    if matches.subcommand_matches("logout").is_some() {
-        return uvd::hub::logout();
-    }
     if let Some(sub) = matches.subcommand_matches("verify") {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         return verify(uvd);
@@ -189,6 +184,9 @@ fn main() -> Result<(), Error> {
         let uvd = sub.get_one::<String>("uvd").unwrap();
         let usb = sub.get_one::<String>("usb").unwrap();
         return create_usb(uvd, usb);
+    }
+    if matches.subcommand_matches("login").is_some() {
+        return uvd::hub::login().await;
     }
     if let Some(sub) = matches.subcommand_matches("remote") {
         if let Some(sub) = sub.subcommand_matches("add") {

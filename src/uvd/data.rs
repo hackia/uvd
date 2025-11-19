@@ -1,7 +1,7 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Manifest {
     pub name: String,
     pub version: String,
@@ -10,7 +10,7 @@ pub struct Manifest {
     pub os: HashMap<String, Vec<PackageInfo>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PackageInfo {
     #[serde(rename = "type")]
     pub package_type: String,

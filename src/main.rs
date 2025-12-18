@@ -10,92 +10,91 @@ pub mod license;
 pub mod output;
 pub mod remote;
 pub mod uvd;
+
 #[allow(clippy::too_many_lines)]
 fn cli() -> clap::ArgMatches {
     Command::new("uvd")
         .version("0.1.0")
         .author("Willy Micieli <dev@hackia.org>")
-        .about("An universal verified disc toolkit")
+        .about("An unix virtual disk toolkit")
         .subcommand(
             Command::new("install")
-                .about("Install a universal verified disc")
+                .about("Install a unix virtual disk")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to install"),
+                        .help("The unix virtual disk to install"),
                 ),
         )
         .subcommand(
             Command::new("reinstall")
-                .about("Reinstall a universal verified disc")
+                .about("Reinstall a unix virtual disk")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to reinstall"),
+                        .help("The unix virtual disk to reinstall"),
                 ),
         )
         .subcommand(
             Command::new("uninstall")
-                .about("Uninstall a universal verified disc")
+                .about("Uninstall a unix virtual disk")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to uninstall"),
+                        .help("The unix virtual disk to uninstall"),
                 ),
         )
         .subcommand(
             Command::new("search")
-                .about("Search for a universal verified disc")
+                .about("Search for a unix virtual disk")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to search"),
+                        .help("The unix virtual disk to search"),
                 ),
         )
-        .subcommand(Command::new("list").about("List all universal verified discs"))
+        .subcommand(Command::new("list").about("List all unix virtual disks"))
         .subcommand(
             Command::new("add")
-                .about("add dependencies to the universal verified disc")
+                .about("add dependencies to the unix virtual disk")
                 .arg(Arg::new("deps").required(true).index(1)),
         )
         .subcommand(
             Command::new("rm")
-                .about("remove a dependencies to the universal verified disc")
+                .about("remove a dependencies to the unix virtual disk")
                 .arg(Arg::new("deps").required(true).index(1)),
         )
-        .subcommand(Command::new("login").about("Login  to the universal verified disc hub"))
-        .subcommand(Command::new("logout").about("Logout from the universal verified disc hub"))
+        .subcommand(Command::new("login").about("Login  to the unix virtual disk hub"))
+        .subcommand(Command::new("logout").about("Logout from the unix virtual disk hub"))
         .subcommand(
             Command::new("verify")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to verify"),
+                        .help("The unix virtual disk to verify"),
                 )
-                .about("Verify a universal verified disc"),
+                .about("Verify a unix virtual disk"),
         )
         .subcommand(
             Command::new("info")
-                .about("Get info for a universal verified disc")
+                .about("Get info for a unix virtual disk")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to get info"),
+                        .help("The unix virtual disk to get info"),
                 ),
         )
-        .subcommand(
-            Command::new("create-uvd").about("Build a universal verified disc from source code"),
-        )
-        .subcommand(Command::new("publish").about("Publish a universal verified disc"))
+        .subcommand(Command::new("create-uvd").about("Build a unix virtual disk from source code"))
+        .subcommand(Command::new("publish").about("Publish a unix virtual disk"))
         .subcommand(
             Command::new("remote")
-                .about("Manage a universal verified disc remote url")
+                .about("Manage a unix virtual disk remote url")
                 .subcommand(
                     Command::new("add")
                         .about("Add a remote url")
@@ -110,22 +109,22 @@ fn cli() -> clap::ArgMatches {
         )
         .subcommand(
             Command::new("update")
-                .about("Update a universal verified disc")
+                .about("Update a unix virtual disk")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to update"),
+                        .help("The unix virtual disk to update"),
                 ),
         )
         .subcommand(
             Command::new("create-usb")
-                .about("Create a universal verified disc usb drive")
+                .about("Create a unix virtual disk usb drive")
                 .arg(
                     Arg::new("uvd")
                         .required(true)
                         .index(1)
-                        .help("The universal verified disc to create usb drive"),
+                        .help("The unix virtual disk to create usb drive"),
                 )
                 .arg(
                     Arg::new("usb")
@@ -134,8 +133,8 @@ fn cli() -> clap::ArgMatches {
                         .help("The usb drive to copy to"),
                 ),
         )
-        .subcommand(Command::new("upgrade").about("Upgrade all universal verified disc"))
-        .subcommand(Command::new("new").about("Start a new universal verified disc project"))
+        .subcommand(Command::new("upgrade").about("Upgrade all unix virtual disk"))
+        .subcommand(Command::new("new").about("Start a new unix virtual disk project"))
         .subcommand(Command::new("archive").about("Archive the source code"))
         .get_matches()
 }
